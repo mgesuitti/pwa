@@ -34,15 +34,13 @@
     }
 
     app.online = function() {
-        document.querySelector(".alert").textContent = "The App is Online!"
-        document.querySelector(".alert").classList.remove("alert-danger");
-        document.querySelector(".alert").classList.add("alert-success");
+        document.querySelector(".alert-danger").setAttribute('hidden','true');
+        document.querySelector(".alert-success").removeAttribute('hidden');
     }
 
     app.offline = function() {
-        document.querySelector(".alert").textContent = "The App is Offline!"
-        document.querySelector(".alert").classList.remove("alert-success");
-        document.querySelector(".alert").classList.add("alert-danger");
+        document.querySelector(".alert-success").setAttribute('hidden','true');
+        document.querySelector(".alert-danger").removeAttribute('hidden');
     }
 
     // ***************************************************
