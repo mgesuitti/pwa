@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="A small example of Progressive Web App by Neocomplexx">
+    <meta name="author" content="Neocomplexx Group SA http://www.neocomplexx.com">
+    <link rel="icon" href="favicon.ico">
+
+    <title>Progressive Web App Example</title>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+    <link href="app.css" rel="stylesheet">
+
+    <!-- Manifest of PWA -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- PWA for Safari on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="PWA Example">
+    <link rel="apple-touch-icon" href="images/icons/icon-152x152.png">
+
+    <!-- PWA for Edge on Windows -->
+    <meta name="msapplication-TileImage" content="images/icons/icon-144x144.png">
+    <meta name="msapplication-TileColor" content="#2093F5">
+  </head>
+  <body>   
+        <!-- App Container -->
+        <main role="main" class="container">
+            <h1 class="mt-5">Progressive Web App example</h1>
+            <p class="lead">Welcome anxious user! :)</p>
+            <div class="alert alert-success" role="alert">
+              
+            </div>
+
+            <table class="table table-striped">
+              <thead class="thead-dark">
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">User ID</th>
+                  <th scope="col">Title</th>
+                  <th scope="col">Body</th>
+                </tr>
+              </thead>
+              <tbody class="body">
+                <tr class="rowTemplate" hidden>
+                  <th class="id"></th>
+                  <td class="userId"></td>
+                  <td class="title"></td>
+                  <td class="body"></td>
+                </tr>
+              </tbody>
+            </table>
+        </main>
+        
+        <!-- App Footer -->
+        <footer class="footer">
+            <div class="container">
+                <span class="text-muted">A small example of Progressive Web App by <a target="_blank" href="http://www.neocomplexx.com">Neocomplexx Group SA</a></span>
+            </div>
+        </footer>
+
+        <!-- Javascript files -->
+        <script src="app.js" async></script>
+    </body>
+</html>
