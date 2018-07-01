@@ -107,7 +107,6 @@
             });
         
         // app.loadData(); // From localStorage
-
         if ('caches' in window) {
             // Fetch from cacheStorage
             caches.match(app.API_URL)

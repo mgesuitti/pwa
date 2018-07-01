@@ -69,7 +69,7 @@ self.addEventListener('fetch', event => {
         // "Cache, falling back to the network" strategy
         event.respondWith(
             caches.match(event.request)
-                .then(response => response || fetch(event))
+                .then(response => response || fetch(event.request))
         );
     }
 });
