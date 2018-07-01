@@ -3,7 +3,7 @@
 
 // Code of the form (function() { /* code here */ })() is known as an "Immediately Invoked Function Expression". 
 // It is frequently used to set up a closure, so you can define variables without polluting the global scope. 
-(function() {
+(function () {
 
     // ***************************************************
     // APP data
@@ -11,13 +11,15 @@
         API_URL: "https://jsonplaceholder.typicode.com/posts",
         LOCAL_STORAGE_KEY: "example_data",
         rows: {},
-        tableBody: document.querySelector('.body'),
+        tableBody: document.querySelector('.tableBody'),
         rowTemplate: document.querySelector('.rowTemplate'),
     };
 
-    // ***************************************************
-    // APP functions
-    app.addRow = function(element) {
+    /**
+     * Add row to HTML table
+     * @param {*} element 
+     */
+    app.addRow = function (element) {
         var row = app.rows[element.id];
         if (!row) {
             var row = app.rowTemplate.cloneNode(true);
@@ -28,69 +30,120 @@
             app.rows[element.id] = row;
 
             row.removeAttribute('hidden');
-            console.log("Adding row: " + row);
             app.tableBody.appendChild(row);
         }
     }
 
-    app.online = function() {
-        document.querySelector(".alert-danger").setAttribute('hidden','true');
+    app.addRows= function (data) {
+        data.forEach(element => {
+            app.addRow(element);
+        });
+    }
+
+    /**
+     * Save data to localstorage
+     * @param {*} newData 
+     */
+    app.saveData = function (newData) {
+        localStorage.setItem(app.LOCAL_STORAGE_KEY, JSON.stringify(newData));
+    }
+
+    /**
+     * Load offline data from localStorage
+     * Warning: localStorage is a synchronous API, please check out IndexedDB :)
+     */
+    app.loadData = function () {
+        var oldData = localStorage.getItem(app.LOCAL_STORAGE_KEY)
+        if (oldData) {
+            console.log("[APP] Showing offline data...");
+            oldData = JSON.parse(oldData);
+
+            oldData.forEach(element => {
+                app.addRow(element);
+            });
+        }
+    }
+
+    /**
+     * online event
+     */
+    app.online = function () {
+        document.querySelector(".alert-danger").setAttribute('hidden', 'true');
         document.querySelector(".alert-success").removeAttribute('hidden');
     }
 
-    app.offline = function() {
-        document.querySelector(".alert-success").setAttribute('hidden','true');
+    /**
+     * offline event
+     */
+    app.offline = function () {
+        document.querySelector(".alert-success").setAttribute('hidden', 'true');
         document.querySelector(".alert-danger").removeAttribute('hidden');
     }
 
-    // ***************************************************
-    // App Code
-
-    // Warning: localStorage is a synchronous API - Please check out IndexedDB :)
-    var oldData = localStorage.getItem(app.LOCAL_STORAGE_KEY)
-    if (oldData) {
-        // Show offline data
-        console.log("Reading offline data...");
-        oldData = JSON.parse(oldData);
-
-        oldData.forEach(element => {
-            app.addRow(element);
-        });
-        
+    app.showLoader = function () {
+        document.querySelector(".loader").removeAttribute('hidden');
     }
 
-    // Fetching new data (100 items)
-    fetch(app.API_URL)
-        .then(response => response.json())
-        .then(newData => {
-            console.log("Reading online data...");
-            // Save data on localstorage
-            localStorage.setItem(app.LOCAL_STORAGE_KEY,JSON.stringify(newData));
+    app.hideLoader = function () {
+        document.querySelector(".loader").setAttribute('hidden', 'true');
+    }
 
-            newData.forEach(element => {
-                app.addRow(element);
+    /**
+     * The App Code
+     * "Cache then network" strategy
+     */
+    app.init = function () {
+        var networkDataReceived = false;
+        app.showLoader();
+
+        // Fetch new data from network
+        var networkUpdate = fetch(app.API_URL)
+            .then(response => response.json())
+            .then(newData => {
+                console.log("[APP] Showing online data...");
+                networkDataReceived = true;
+                // app.saveData(newData); // To LocalStorage
+                app.addRows(newData);
             });
-        });
-    
-    // ***************************************************
-    // Events
-    window.addEventListener('online', function(e) {
-        app.online();
-    }, false);
         
-    window.addEventListener('offline', function(e) {
-        app.offline();
-    }, false);
+        // app.loadData(); // From localStorage
+        // Fetch from cacheStorage
+        caches.match(app.API_URL)
+            .then(response => response.json())
+            .then(oldData => {
+                // don't overwrite newer network data
+                if (!networkDataReceived) {
+                    console.log("[APP] Showing offline data...");
+                    app.addRows(oldData);
+                }
+            })
+            .catch(() => networkUpdate)
+            .catch(() => console.log("[APP] We didn't get cached or online data"))
+            .then(() => app.hideLoader());
+    }
 
-    (navigator.onLine) ?  app.online() : app.offline();
+    // ***************************************************
+    // Events binding
+    window.addEventListener('online', event => {
+        app.online();
+    });
+
+    window.addEventListener('offline', event => {
+        app.offline();
+    });
+
+    (navigator.onLine) ? app.online() : app.offline();
+
+    app.init();
 
     // ***************************************************
     // serviceWorker registration
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker
             .register('./service-worker.js')
-            .then(() => { 
-                console.log('Service Worker Registered'); 
+            .then(() => {
+                console.log('[APP] Service Worker Registered');
             });
     }
+
 })();

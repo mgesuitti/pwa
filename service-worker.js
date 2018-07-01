@@ -1,8 +1,9 @@
 // Developed by Neocomplexx Group SA - www.neocomplexx.com (2018)
 // https://jsonplaceholder.typicode.com - API for testing
 
-var dataCacheName = 'pwaExampleData-v1';
-var cacheName = 'pwaExamplePWA-final-1';
+var DATA_CACHE_NAME = 'pwaExampleData-v1';
+var CACHE_NAME = 'pwaExamplePWA-final-1';
+var API_URL = 'https://jsonplaceholder.typicode.com';
 
 /* Attention: /pwa/ is the location on the server used for testing */
 var filesToCache = [
@@ -14,60 +15,61 @@ var filesToCache = [
 ];
 
 self.addEventListener('install', event => {
-    console.log('[PWA ServiceWorker] Installing...');
+    console.log('[ServiceWorker] Installing...');
+
+    // To Extend the installing stage until the promise is resolved
     event.waitUntil(
-        caches.open(cacheName).then(cache => {
-            console.log('[PWA ServiceWorker] Caching resources (APP SHELL)...');
+        caches.open(CACHE_NAME).then(cache => {
+            console.log('[ServiceWorker] Caching app shell (resources)...');
             return cache.addAll(filesToCache);
         })
     );
 });
 
+// Clean-up & Migration
 self.addEventListener('activate', event => {
-    console.log('[PWA ServiceWorker] Activating...');
+    console.log('[ServiceWorker] Activating...');
+
+    // To Extend the activating stage until the promise is resolved
     event.waitUntil(
-        caches.keys().then(cacheNames => {
-            return Promise.all(
-                cacheNames.map(cacheName => {
-                    if (!cacheNames.includes(cacheName)) {
-                        console.log('[PWA ServiceWorker] Removing expired cache...', key);
+        caches.keys().then(CACHE_NAMEs => Promise.all(
+                CACHE_NAMEs.map(CACHE_NAME => {
+                    if (!CACHE_NAMEs.includes(CACHE_NAME)) {
+                        console.log('[ServiceWorker] Removing expired cache...', key);
                         return caches.delete(key);
                     }
                 })
-            );
-        })
+            ))
+            .then(() => console.log('[ServiceWorker] Now is ready to handle fetches!'))   
     );
-
-    // The code below lets you activate the service worker faster.
+      
+    // To start controlling all open clients without reloading them
+    // Client is our page!
     return self.clients.claim();
 });
 
 self.addEventListener('fetch', event => {
     const url = new URL(event.request.url);
-    console.log('[PWA ServiceWorker] Fetching...', url);
-    if (url.origin === 'https://jsonplaceholder.typicode.com') {
-        /*
-        * The app is asking for new data. 
-        * The service worker always goes to the network and then caches the response. 
-        * Strategy: "Online First"
-        */
+    console.log('[ServiceWorker] Fetching... ', url.href);
+    
+    if (url.origin === API_URL) {
+        // Pattern: "Offline First"
+        // "Cache then network" strategy
+        // We always go to the network & update a cache as we go.
         event.respondWith(
-            caches.open(dataCacheName).then(cache => {
+            caches.open(DATA_CACHE_NAME).then(cache =>  {
                 return fetch(event.request).then(response => {
-                    cache.put(event.request.url, response.clone());
-                    return response;
+                  cache.put(event.request, response.clone());
+                  return response;
                 });
             })
         );
     } else {
-        /*
-        * The app is asking for resources like html,js,css (APP SHELL).
-        * Strategy: "Offline First"
-        */
+        // Pattern: "Offline First"
+        // "Cache, falling back to the network" strategy
         event.respondWith(
-            caches.match(event.request).then(response => {
-                return response || fetch(event.request);
-            })
+            caches.match(event.request)
+                .then(response => response || fetch(event))
         );
     }
 });
