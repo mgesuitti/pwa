@@ -107,19 +107,22 @@
             });
         
         // app.loadData(); // From localStorage
-        // Fetch from cacheStorage
-        caches.match(app.API_URL)
-            .then(response => response.json())
-            .then(oldData => {
-                // don't overwrite newer network data
-                if (!networkDataReceived) {
-                    console.log("[APP] Showing offline data...");
-                    app.addRows(oldData);
-                }
-            })
-            .catch(() => networkUpdate)
-            .catch(() => console.log("[APP] We didn't get cached or online data"))
-            .then(() => app.hideLoader());
+
+        if ('caches' in window) {
+            // Fetch from cacheStorage
+            caches.match(app.API_URL)
+                .then(response => response.json())
+                .then(oldData => {
+                    // don't overwrite newer network data
+                    if (!networkDataReceived) {
+                        console.log("[APP] Showing offline data...");
+                        app.addRows(oldData);
+                    }
+                })
+                .catch(() => networkUpdate)
+                .catch(() => console.log("[APP] We didn't get cached or online data"))
+                .then(() => app.hideLoader());
+        }
     }
 
     // ***************************************************
